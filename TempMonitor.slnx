@@ -1,3 +1,4 @@
-<Solution>
+﻿<Solution>
   <Project Path="TempMonitor/TempMonitor.csproj" Id="56dffe94-d4a2-4d2a-a961-f7c3d86802f6" />
+  <Project Path="Sig5560Simulator/Sig5560Simulator.csproj" Id="8c3b2f61-4e7a-4b1d-9a55-2d7e0c9f5a13" />
 </Solution>
