@@ -18,7 +18,8 @@ VALUES (@ALERT_ID, @SEND_DT, @RECEIVER_NM, @MESSAGE, @RESULT_CD, @RESULT_MSG);";
                 DbHelper.NVarChar("@RECEIVER_NM", Truncate(receiver, 50), 50),
                 DbHelper.NVarChar("@MESSAGE", Truncate(message, 500), 500),
                 DbHelper.VarChar("@RESULT_CD", success ? "SUCCESS" : "FAIL", 10),
-                DbHelper.NVarChar("@RESULT_MSG", Truncate(resultMessage, 500), 500));
+                // 성공이면 사유가 없으므로 NULL 그대로 (Truncate 는 null 을 "" 로 바꾸므로 거치지 않음)
+                DbHelper.NVarChar("@RESULT_MSG", resultMessage == null ? null : Truncate(resultMessage, 500), 500));
         }
 
         public Task<DataTable> SearchAsync(DateTime from, DateTime to)
