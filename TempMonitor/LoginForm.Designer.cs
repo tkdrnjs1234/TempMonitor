@@ -134,6 +134,7 @@
             this.btnLogin.TabIndex = 6;
             this.btnLogin.Text = "로그인";
             this.btnLogin.UseVisualStyleBackColor = false;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
             // 
             // btnExit
             // 
@@ -144,11 +145,14 @@
             this.btnExit.TabIndex = 7;
             this.btnExit.Text = "종료";
             this.btnExit.UseVisualStyleBackColor = true;
-            // 
+            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            //
             // LoginForm
-            // 
+            //
+            this.AcceptButton = this.btnLogin;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnExit;
             this.ClientSize = new System.Drawing.Size(593, 562);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnLogin);
@@ -158,8 +162,11 @@
             this.Controls.Add(this.lblPw);
             this.Controls.Add(this.lblId);
             this.Controls.Add(this.pnlHeader);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.MaximizeBox = false;
             this.Name = "LoginForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "로그인";
             this.pnlHeader.ResumeLayout(false);
             this.ResumeLayout(false);

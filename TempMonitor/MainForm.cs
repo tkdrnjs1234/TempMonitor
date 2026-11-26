@@ -20,12 +20,11 @@ namespace TempMonitor
         private const int MaxRealtimeRows = 200;     // 실시간 그리드에 유지할 행 수
         private const int MaxHistoryRows = 50000;    // 기록 조회 최대 행 수 (메모리/화면 보호)
 
-        // ---- 색상 ---------------------------------------------------------------------
+        // ---- 상태별 색상 (실행 중에 상태가 바뀔 때마다 코드에서 바꿔 칠하는 색) ------------
         private static readonly Color ColorNormal = Color.SeaGreen;
         private static readonly Color ColorWarning = Color.Crimson;
         private static readonly Color ColorError = Color.DarkOrange;
         private static readonly Color ColorOffline = Color.Gray;
-        private static readonly Color ColorNavy = Color.FromArgb(31, 56, 100);
 
         // ---- 통신 ---------------------------------------------------------------------
         private readonly ModbusTcpClient _modbus = new ModbusTcpClient();
@@ -65,39 +64,38 @@ namespace TempMonitor
         private bool _histEndFollowsNow = true;
         private bool _alertEndFollowsNow = true;
 
-        private readonly System.Windows.Forms.Timer _clockTimer = new System.Windows.Forms.Timer { Interval = 1000 };
-
         /// <summary>로그아웃 버튼으로 닫혔는지 (Program.cs 에서 로그인 창을 다시 띄울지 판단)</summary>
         public bool LogoutRequested { get; private set; }
 
+        // 화면 속성(글자, 색, 그리드 컬럼, 차트 모양, 가운데 표시)과 이벤트 연결(버튼 Click, Load,
+        // FormClosing, 시계 Timer 등)은 모두 디자이너(MainForm.Designer.cs)에서 설정합니다.
+        // 이 파일에는 "실행 중에 바뀌는 것"과 "동작"만 둡니다.
         public MainForm()
         {
             InitializeComponent();
             _sensor = new Sig5560Client(_modbus);
+        }
 
-            StartPosition = FormStartPosition.CenterScreen;
+        private void tmrClock_Tick(object sender, EventArgs e)
+        {
+            tslClock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
 
-            // 이벤트 연결
-            Load += MainForm_Load;
-            FormClosing += MainForm_FormClosing;
-            btnLogout.Click += btnLogout_Click;
-            btnConnect.Click += btnConnect_Click;
-            btnDisconnect.Click += btnDisconnect_Click;
-            btnResetMinMax.Click += btnResetMinMax_Click;
-            btnSearch.Click += btnSearch_Click;
-            btnToday.Click += btnToday_Click;
-            btnAlertSearch.Click += btnAlertSearch_Click;
-            btnKakaoSearch.Click += btnKakaoSearch_Click;
-            btnKakaoTest.Click += btnKakaoTest_Click;
-            btnSaveSetting.Click += btnSaveSetting_Click;
-            dgvHistory.CellFormatting += dgvHistory_CellFormatting;
-            _clockTimer.Tick += (s, e) => tslClock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        // 조회 종료 시각 "지금 따라가기": 종료를 현재 분 이후로 두면 조회/탭 이동 때마다 현재 시각으로 갱신,
+        // 사용자가 과거 시각을 직접 고르면 그 값으로 고정
+        private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
+        {
+            _histEndFollowsNow = dateTimePicker2.Value >= TruncateToMinute(DateTime.Now);
+        }
 
-            // 조회 종료 시각 "지금 따라가기": 종료를 현재 분 이후로 두면 조회/탭 이동 때마다 현재 시각으로 갱신,
-            // 사용자가 과거 시각을 직접 고르면 그 값으로 고정
-            dateTimePicker2.ValueChanged += (s, e) => _histEndFollowsNow = dateTimePicker2.Value >= TruncateToMinute(DateTime.Now);
-            dtpAlertEnd.ValueChanged += (s, e) => _alertEndFollowsNow = dtpAlertEnd.Value >= TruncateToMinute(DateTime.Now);
-            tabMain.SelectedIndexChanged += (s, e) => RefreshEndTimes();
+        private void dtpAlertEnd_ValueChanged(object sender, EventArgs e)
+        {
+            _alertEndFollowsNow = dtpAlertEnd.Value >= TruncateToMinute(DateTime.Now);
+        }
+
+        private void tabMain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RefreshEndTimes();
         }
 
         // =============================================================================
@@ -110,13 +108,12 @@ namespace TempMonitor
             lblUser.Text = user == null ? "" : $"사용자 : {user.UserId}(권한 : {user.RoleName})";
 
             InitCurrentPanel();
-            InitChart();
             InitGrids();
             InitSearchDates();
             ApplyPermission();
 
             tslClock.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            _clockTimer.Start();
+            tmrClock.Start();
 
             // DB 에서 설정과 센서 정보 읽기 (실패해도 화면은 뜨도록 기본값으로 진행)
             try
@@ -150,133 +147,50 @@ namespace TempMonitor
 
         private void InitCurrentPanel()
         {
-            lblCurrentTemp.Text = "--.-";
-            lblUnit.Text = "℃";
-            lblStatus.Text = "연결 안 됨";
-            lblLastUpdate.Text = "최종 수신 : -";
-            lblMinMax.Text = "최저 - / 최고 -";
+            // 경고 기준 온도는 DB 설정에 따라 바뀌므로 코드에서 표시
             UpdateThresholdLabel();
 
-            // 사각형 패널을 동그란 램프 모양으로 자르기
+            // 사각형 패널을 동그란 램프 모양으로 자르기 (디자이너 속성으로는 할 수 없는 것)
             var path = new GraphicsPath();
             path.AddEllipse(0, 0, pnlLamp.Width, pnlLamp.Height);
             pnlLamp.Region = new Region(path);
-            pnlLamp.BackColor = ColorOffline;
-        }
-
-        private void InitChart()
-        {
-            ChartArea area = chartTemp.ChartAreas[0];
-            area.AxisX.LabelStyle.Format = "HH:mm:ss";
-            area.AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
-            area.AxisX.MajorGrid.LineColor = Color.Gainsboro;
-            area.AxisY.IsStartedFromZero = false;    // 0℃ 부터 그리면 변화가 납작하게 보임
-            area.AxisY.LabelStyle.Format = "0.0";
-            area.AxisY.MajorGrid.LineColor = Color.Gainsboro;
-            area.AxisY.Title = "℃";
-            // Y축 제목은 기본이 90도 회전(세로 쓰기)이라 ℃ 가 눕혀 보임 → 가로로 똑바로
-            area.AxisY.TextOrientation = TextOrientation.Horizontal;
-
-            Series temp = chartTemp.Series[0];
-            temp.Name = "온도";
-            temp.ChartType = SeriesChartType.Line;
-            temp.XValueType = ChartValueType.DateTime;
-            temp.BorderWidth = 2;
-            temp.Color = ColorNavy;
-
-            // 경고 기준선: 별도 시리즈로 그려야 Y축 자동 범위에 기준 온도가 포함됩니다.
-            var threshold = new Series("기준")
-            {
-                ChartArea = area.Name,
-                ChartType = SeriesChartType.Line,
-                XValueType = ChartValueType.DateTime,
-                BorderDashStyle = ChartDashStyle.Dash,
-                BorderWidth = 1,
-                Color = ColorWarning,
-                IsVisibleInLegend = true
-            };
-            chartTemp.Series.Add(threshold);
-
-            temp.IsVisibleInLegend = true;
-            chartTemp.Legends[0].Docking = Docking.Top;
         }
 
         private void InitGrids()
         {
-            // DataTable 을 바인딩할 때 디자이너에서 만든 컬럼을 그대로 쓰고, 자동 컬럼 생성은 끕니다.
+            // AutoGenerateColumns 는 속성 창에 나오지 않는 속성이라 코드에서만 설정할 수 있습니다.
+            // (DataTable 을 바인딩할 때 디자이너에서 만든 컬럼만 쓰고, 자동 컬럼 생성은 끄기)
             dgvHistory.AutoGenerateColumns = false;
-            colHistTime.DataPropertyName = "MEASURE_DT";
-            colHistTime.DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
-            colHistTemp.DataPropertyName = "TEMP_VALUE";
-            colHistTemp.DefaultCellStyle.Format = "0.0";
-            colHistTemp.DefaultCellStyle.NullValue = "-";   // 센서 오류로 온도가 NULL 인 행은 빈칸 대신 "-"
-            colHistStatus.DataPropertyName = "STATUS_NM";
-
             dgvAlert.AutoGenerateColumns = false;
-            colAlertTime.DataPropertyName = "ALERT_DT";
-            colAlertTime.DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
-            colAlertTemp.DataPropertyName = "TEMP_VALUE";
-            colAlertTemp.DefaultCellStyle.Format = "0.0";
-            colAlertThreshold.DataPropertyName = "THRESHOLD_VALUE";
-            colAlertThreshold.DefaultCellStyle.Format = "0.0";
-            colAlertKakao.DataPropertyName = "KAKAO_STATUS_NM";
-
             dgvKakao.AutoGenerateColumns = false;
-            colKakaoTime.DataPropertyName = "SEND_DT";
-            colKakaoTime.DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
-            colKakaoReceiver.DataPropertyName = "RECEIVER_NM";
-            colKakaoMessage.DataPropertyName = "MESSAGE";
-            colKakaoResult.DataPropertyName = "RESULT_NM";
 
-            lblTotalCount.Text = "총 0건";
-            lblAlertCount.Text = "경고 0건";
-            lblKakaoCount.Text = "발송 0건";
-
-            // 모든 그리드는 "보기 전용" (장비/DB 에서 받은 데이터를 보여주기만 함)
-            // 정렬은 "의미 있는 컬럼"에만 허용. 나머지 헤더는 눌러도 아무 일 없음.
-            MakeViewOnly(dgvRealtime);                              // 실시간은 항상 최신이 맨 위 → 정렬 금지
-            MakeViewOnly(dgvHistory, colHistTime, colHistTemp, colHistStatus); // 시간순 + 온도순(최고/최저 시점) + 상태별(경고/오류 모아보기)
-            MakeViewOnly(dgvAlert, colAlertTime);                  // 발생 시각순만
-            MakeViewOnly(dgvKakao, colKakaoTime);                  // 발송 시각순만
+            // 보기 전용, 정렬 가능한 컬럼, 컬럼 연결(DataPropertyName), 표시 형식은 디자이너에서 설정했고,
+            // 여기서는 속성 창으로 할 수 없는 "동작"만 붙입니다.
+            AttachViewOnlyBehavior(dgvRealtime, null);            // 실시간은 항상 최신이 맨 위 → 정렬 금지
+            AttachViewOnlyBehavior(dgvHistory, colHistTime);      // 시간 / 온도 / 상태 정렬 가능
+            AttachViewOnlyBehavior(dgvAlert, colAlertTime);       // 발생 시각순만
+            AttachViewOnlyBehavior(dgvKakao, colKakaoTime);       // 발송 시각순만
         }
 
         /// <summary>
-        /// 행 선택(파란 하이라이트)을 없애고 편집도 막습니다.
-        /// 선택 상태가 남아 있으면 경고/오류 행의 색(주황/빨강)이 파란색에 가려지고,
-        /// 사용자가 "선택한 행에 뭔가 할 수 있나?" 하고 오해하게 됩니다.
-        /// sortableColumns 에 넘긴 컬럼만 헤더 클릭 정렬이 됩니다.
+        /// 보기 전용 그리드에 "동작"을 붙입니다. (속성은 디자이너에 있음)
+        ///  - 행 선택(파란 하이라이트)을 바로 해제: 경고/오류 행의 색이 파란색에 가려지지 않게
+        ///  - 조회 직후 기본 정렬 컬럼(시각)에 ▼ 표시
+        ///  - 정렬 가능한 헤더 위에서는 손 모양 커서
         /// </summary>
-        private static void MakeViewOnly(DataGridView dgv, params DataGridViewColumn[] sortableColumns)
+        private static void AttachViewOnlyBehavior(DataGridView dgv, DataGridViewColumn defaultSortColumn)
         {
-            dgv.ReadOnly = true;
-            dgv.AllowUserToAddRows = false;
-            dgv.AllowUserToDeleteRows = false;
-            dgv.AllowUserToResizeRows = false;
-            dgv.MultiSelect = false;
-
             // 선택되는 즉시 해제 → 하이라이트가 생기지 않음 (데이터 바인딩 직후 첫 행 자동 선택도 같이 해제됨)
             dgv.SelectionChanged += (s, e) => dgv.ClearSelection();
 
-            // 현재 셀이 있는 컬럼의 헤더가 파랗게 칠해지는 것도 막기 (헤더 선택색 = 평소색)
-            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = dgv.ColumnHeadersDefaultCellStyle.BackColor;
-            dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = dgv.ColumnHeadersDefaultCellStyle.ForeColor;
-
-            foreach (DataGridViewColumn col in dgv.Columns)
-            {
-                bool sortable = Array.IndexOf(sortableColumns, col) >= 0;
-                col.SortMode = sortable ? DataGridViewColumnSortMode.Automatic : DataGridViewColumnSortMode.NotSortable;
-                if (sortable) col.ToolTipText = "클릭하면 정렬됩니다";
-            }
-
-            // 조회 쿼리는 모두 "시각 DESC" 로 가져오므로, 조회 직후 첫 번째 정렬 컬럼(시각)에 ▼ 를 표시해
+            // 조회 쿼리는 모두 "시각 DESC" 로 가져오므로, 조회 직후 시각 컬럼에 ▼ 를 표시해
             // 지금 화면이 어떤 순서인지 알려 줍니다. (헤더를 눌러 정렬하면 그 컬럼으로 ▲/▼ 가 옮겨감)
-            if (sortableColumns.Length > 0)
+            if (defaultSortColumn != null)
             {
-                DataGridViewColumn defaultColumn = sortableColumns[0];
                 dgv.DataBindingComplete += (s, e) =>
                 {
                     if (dgv.SortedColumn == null && dgv.DataSource != null)
-                        defaultColumn.HeaderCell.SortGlyphDirection = SortOrder.Descending;
+                        defaultSortColumn.HeaderCell.SortGlyphDirection = SortOrder.Descending;
                 };
             }
 
@@ -1057,8 +971,7 @@ namespace TempMonitor
                 }
             }
 
-            _clockTimer.Stop();
-            _clockTimer.Dispose();
+            tmrClock.Stop();   // Timer 는 디자이너의 components 에 들어 있어서 폼이 닫힐 때 같이 정리됨
             StopPolling();
             _modbus.Dispose();
         }

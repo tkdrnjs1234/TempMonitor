@@ -11,17 +11,15 @@ namespace TempMonitor
 
         public LoginForm()
         {
+            // 화면 속성(AcceptButton=엔터 로그인, CancelButton=ESC 종료, 가운데 표시, 크기 고정)과
+            // 버튼 이벤트 연결은 모두 디자이너(LoginForm.Designer.cs)에서 설정합니다.
             InitializeComponent();
+        }
 
-            // 이벤트 연결을 디자이너가 아니라 코드에서 하면, 어떤 이벤트가 연결됐는지 한눈에 보입니다.
-            btnLogin.Click += btnLogin_Click;
-            btnExit.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
-
-            AcceptButton = btnLogin;   // 엔터 = 로그인
-            CancelButton = btnExit;    // ESC  = 종료
-            StartPosition = FormStartPosition.CenterScreen;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
         // async void 는 "이벤트 핸들러"에서만 씁니다. (예외는 반드시 내부에서 잡기)

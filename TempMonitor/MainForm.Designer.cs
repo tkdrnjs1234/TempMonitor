@@ -28,13 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.btnLogout = new System.Windows.Forms.Button();
             this.lblUser = new System.Windows.Forms.Label();
@@ -127,6 +135,7 @@
             this.lblRiseStepDesc = new System.Windows.Forms.Label();
             this.lblAlertInterval = new System.Windows.Forms.Label();
             this.lblAlertTemp = new System.Windows.Forms.Label();
+            this.tmrClock = new System.Windows.Forms.Timer(this.components);
             this.pnlTop.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabMonitor.SuspendLayout();
@@ -182,6 +191,7 @@
             this.btnLogout.TabIndex = 2;
             this.btnLogout.Text = "로그아웃";
             this.btnLogout.UseVisualStyleBackColor = true;
+            this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
             // 
             // lblUser
             // 
@@ -220,6 +230,7 @@
             this.tabMain.SelectedIndex = 0;
             this.tabMain.Size = new System.Drawing.Size(842, 624);
             this.tabMain.TabIndex = 1;
+            this.tabMain.SelectedIndexChanged += new System.EventHandler(this.tabMain_SelectedIndexChanged);
             // 
             // tabMonitor
             // 
@@ -288,6 +299,7 @@
             // 
             this.dgvRealtime.AllowUserToAddRows = false;
             this.dgvRealtime.AllowUserToDeleteRows = false;
+            this.dgvRealtime.AllowUserToResizeRows = false;
             this.dgvRealtime.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvRealtime.BackgroundColor = System.Drawing.Color.White;
             this.dgvRealtime.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
@@ -296,8 +308,8 @@
             dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
             dataGridViewCellStyle5.Font = new System.Drawing.Font("맑은 고딕", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvRealtime.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvRealtime.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -309,6 +321,7 @@
             this.dgvRealtime.EnableHeadersVisualStyles = false;
             this.dgvRealtime.Location = new System.Drawing.Point(3, 22);
             this.dgvRealtime.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.dgvRealtime.MultiSelect = false;
             this.dgvRealtime.Name = "dgvRealtime";
             this.dgvRealtime.ReadOnly = true;
             this.dgvRealtime.RowHeadersVisible = false;
@@ -324,20 +337,23 @@
             this.colTime.MinimumWidth = 6;
             this.colTime.Name = "colTime";
             this.colTime.ReadOnly = true;
-            // 
+            this.colTime.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colTemp
-            // 
+            //
             this.colTemp.HeaderText = "온도(℃)";
             this.colTemp.MinimumWidth = 6;
             this.colTemp.Name = "colTemp";
             this.colTemp.ReadOnly = true;
-            // 
+            this.colTemp.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colStatus
-            // 
+            //
             this.colStatus.HeaderText = "상태";
             this.colStatus.MinimumWidth = 6;
             this.colStatus.Name = "colStatus";
             this.colStatus.ReadOnly = true;
+            this.colStatus.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // grpChart
             // 
@@ -353,20 +369,39 @@
             // 
             // chartTemp
             // 
+            chartArea2.AxisX.IntervalAutoMode = System.Windows.Forms.DataVisualization.Charting.IntervalAutoMode.VariableCount;
+            chartArea2.AxisX.LabelStyle.Format = "HH:mm:ss";
+            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.IsStartedFromZero = false;
+            chartArea2.AxisY.LabelStyle.Format = "0.0";
+            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Horizontal;
+            chartArea2.AxisY.Title = "℃";
             chartArea2.Name = "ChartArea1";
             this.chartTemp.ChartAreas.Add(chartArea2);
             this.chartTemp.Dock = System.Windows.Forms.DockStyle.Fill;
+            legend2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
             legend2.Name = "Legend1";
             this.chartTemp.Legends.Add(legend2);
             this.chartTemp.Location = new System.Drawing.Point(3, 22);
             this.chartTemp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.chartTemp.Name = "chartTemp";
+            series2.BorderWidth = 2;
             series2.ChartArea = "ChartArea1";
             series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.IsVisibleInLegend = false;
+            series2.Color = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
             series2.Legend = "Legend1";
-            series2.Name = "Series1";
+            series2.Name = "온도";
+            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            series3.BorderDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash;
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series3.Color = System.Drawing.Color.Crimson;
+            series3.Legend = "Legend1";
+            series3.Name = "기준";
+            series3.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
             this.chartTemp.Series.Add(series2);
+            this.chartTemp.Series.Add(series3);
             this.chartTemp.Size = new System.Drawing.Size(523, 335);
             this.chartTemp.TabIndex = 0;
             this.chartTemp.Text = "chart1";
@@ -400,6 +435,7 @@
             this.btnResetMinMax.TabIndex = 8;
             this.btnResetMinMax.Text = "초기화";
             this.btnResetMinMax.UseVisualStyleBackColor = true;
+            this.btnResetMinMax.Click += new System.EventHandler(this.btnResetMinMax_Click);
             // 
             // lblMinMax
             // 
@@ -440,7 +476,8 @@
             this.lblStatus.Text = "연결 안 됨";
             // 
             // pnlLamp
-            // 
+            //
+            this.pnlLamp.BackColor = System.Drawing.Color.Gray;
             this.pnlLamp.Location = new System.Drawing.Point(14, 70);
             this.pnlLamp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pnlLamp.Name = "pnlLamp";
@@ -454,6 +491,7 @@
             this.lblUnit.Name = "lblUnit";
             this.lblUnit.Size = new System.Drawing.Size(40, 34);
             this.lblUnit.TabIndex = 1;
+            this.lblUnit.Text = "℃";
             this.lblUnit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblCurrentTemp
@@ -463,6 +501,7 @@
             this.lblCurrentTemp.Name = "lblCurrentTemp";
             this.lblCurrentTemp.Size = new System.Drawing.Size(172, 58);
             this.lblCurrentTemp.TabIndex = 0;
+            this.lblCurrentTemp.Text = "--.-";
             this.lblCurrentTemp.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // grpSensor
@@ -492,6 +531,7 @@
             this.btnDisconnect.TabIndex = 5;
             this.btnDisconnect.Text = "연결 해제";
             this.btnDisconnect.UseVisualStyleBackColor = true;
+            this.btnDisconnect.Click += new System.EventHandler(this.btnDisconnect_Click);
             // 
             // btnConnect
             // 
@@ -502,6 +542,7 @@
             this.btnConnect.TabIndex = 4;
             this.btnConnect.Text = "연결";
             this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // lblPortNo
             // 
@@ -556,6 +597,7 @@
             // 
             this.dgvHistory.AllowUserToAddRows = false;
             this.dgvHistory.AllowUserToDeleteRows = false;
+            this.dgvHistory.AllowUserToResizeRows = false;
             this.dgvHistory.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -567,8 +609,8 @@
             dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
             dataGridViewCellStyle6.Font = new System.Drawing.Font("맑은 고딕", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             dataGridViewCellStyle6.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvHistory.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle6;
             this.dgvHistory.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -578,6 +620,7 @@
             this.colHistStatus});
             this.dgvHistory.EnableHeadersVisualStyles = false;
             this.dgvHistory.Location = new System.Drawing.Point(18, 79);
+            this.dgvHistory.MultiSelect = false;
             this.dgvHistory.Name = "dgvHistory";
             this.dgvHistory.ReadOnly = true;
             this.dgvHistory.RowHeadersVisible = false;
@@ -586,27 +629,39 @@
             this.dgvHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvHistory.Size = new System.Drawing.Size(800, 507);
             this.dgvHistory.TabIndex = 1;
-            // 
+            this.dgvHistory.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvHistory_CellFormatting);
+            //
             // colHistTime
-            // 
+            //
+            this.colHistTime.DataPropertyName = "MEASURE_DT";
+            dataGridViewCellStyle9.Format = "yyyy-MM-dd HH:mm:ss";
+            this.colHistTime.DefaultCellStyle = dataGridViewCellStyle9;
             this.colHistTime.HeaderText = "측정 시간";
             this.colHistTime.MinimumWidth = 6;
             this.colHistTime.Name = "colHistTime";
             this.colHistTime.ReadOnly = true;
-            // 
+            this.colHistTime.ToolTipText = "클릭하면 정렬됩니다";
+            //
             // colHistTemp
-            // 
+            //
+            this.colHistTemp.DataPropertyName = "TEMP_VALUE";
+            dataGridViewCellStyle10.Format = "0.0";
+            dataGridViewCellStyle10.NullValue = "-";
+            this.colHistTemp.DefaultCellStyle = dataGridViewCellStyle10;
             this.colHistTemp.HeaderText = "온도(℃)";
             this.colHistTemp.MinimumWidth = 6;
             this.colHistTemp.Name = "colHistTemp";
             this.colHistTemp.ReadOnly = true;
-            // 
+            this.colHistTemp.ToolTipText = "클릭하면 정렬됩니다";
+            //
             // colHistStatus
-            // 
+            //
+            this.colHistStatus.DataPropertyName = "STATUS_NM";
             this.colHistStatus.HeaderText = "상태";
             this.colHistStatus.MinimumWidth = 6;
             this.colHistStatus.Name = "colHistStatus";
             this.colHistStatus.ReadOnly = true;
+            this.colHistStatus.ToolTipText = "클릭하면 정렬됩니다";
             // 
             // pnlHistorySearch
             // 
@@ -631,7 +686,7 @@
             this.lblTotalCount.Name = "lblTotalCount";
             this.lblTotalCount.Size = new System.Drawing.Size(53, 20);
             this.lblTotalCount.TabIndex = 6;
-            this.lblTotalCount.Text = "총 6건";
+            this.lblTotalCount.Text = "총 0건";
             // 
             // btnToday
             // 
@@ -642,6 +697,7 @@
             this.btnToday.TabIndex = 5;
             this.btnToday.Text = "오늘";
             this.btnToday.UseVisualStyleBackColor = true;
+            this.btnToday.Click += new System.EventHandler(this.btnToday_Click);
             // 
             // btnSearch
             // 
@@ -652,6 +708,7 @@
             this.btnSearch.TabIndex = 4;
             this.btnSearch.Text = "조회";
             this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
             // 
             // lblEnd
             // 
@@ -671,6 +728,7 @@
             this.dateTimePicker2.Name = "dateTimePicker2";
             this.dateTimePicker2.Size = new System.Drawing.Size(200, 25);
             this.dateTimePicker2.TabIndex = 2;
+            this.dateTimePicker2.ValueChanged += new System.EventHandler(this.dateTimePicker2_ValueChanged);
             // 
             // dateTimePicker1
             // 
@@ -708,6 +766,7 @@
             // 
             this.dgvAlert.AllowUserToAddRows = false;
             this.dgvAlert.AllowUserToDeleteRows = false;
+            this.dgvAlert.AllowUserToResizeRows = false;
             this.dgvAlert.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvAlert.BackgroundColor = System.Drawing.Color.White;
             this.dgvAlert.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
@@ -716,8 +775,8 @@
             dataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
             dataGridViewCellStyle7.Font = new System.Drawing.Font("맑은 고딕", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             dataGridViewCellStyle7.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvAlert.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dgvAlert.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -728,6 +787,7 @@
             this.colAlertKakao});
             this.dgvAlert.EnableHeadersVisualStyles = false;
             this.dgvAlert.Location = new System.Drawing.Point(18, 80);
+            this.dgvAlert.MultiSelect = false;
             this.dgvAlert.Name = "dgvAlert";
             this.dgvAlert.ReadOnly = true;
             this.dgvAlert.RowHeadersVisible = false;
@@ -739,31 +799,45 @@
             // 
             // colAlertTime
             // 
+            this.colAlertTime.DataPropertyName = "ALERT_DT";
+            dataGridViewCellStyle11.Format = "yyyy-MM-dd HH:mm:ss";
+            this.colAlertTime.DefaultCellStyle = dataGridViewCellStyle11;
             this.colAlertTime.HeaderText = "발생 시각";
             this.colAlertTime.MinimumWidth = 6;
             this.colAlertTime.Name = "colAlertTime";
             this.colAlertTime.ReadOnly = true;
-            // 
+            this.colAlertTime.ToolTipText = "클릭하면 정렬됩니다";
+            //
             // colAlertTemp
-            // 
+            //
+            this.colAlertTemp.DataPropertyName = "TEMP_VALUE";
+            dataGridViewCellStyle12.Format = "0.0";
+            this.colAlertTemp.DefaultCellStyle = dataGridViewCellStyle12;
             this.colAlertTemp.HeaderText = "온도(℃)";
             this.colAlertTemp.MinimumWidth = 6;
             this.colAlertTemp.Name = "colAlertTemp";
             this.colAlertTemp.ReadOnly = true;
-            // 
+            this.colAlertTemp.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colAlertThreshold
-            // 
+            //
+            this.colAlertThreshold.DataPropertyName = "THRESHOLD_VALUE";
+            dataGridViewCellStyle13.Format = "0.0";
+            this.colAlertThreshold.DefaultCellStyle = dataGridViewCellStyle13;
             this.colAlertThreshold.HeaderText = "기준 온도(℃)";
             this.colAlertThreshold.MinimumWidth = 6;
             this.colAlertThreshold.Name = "colAlertThreshold";
             this.colAlertThreshold.ReadOnly = true;
-            // 
+            this.colAlertThreshold.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colAlertKakao
-            // 
+            //
+            this.colAlertKakao.DataPropertyName = "KAKAO_STATUS_NM";
             this.colAlertKakao.HeaderText = "카톡 발송";
             this.colAlertKakao.MinimumWidth = 6;
             this.colAlertKakao.Name = "colAlertKakao";
             this.colAlertKakao.ReadOnly = true;
+            this.colAlertKakao.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // pnlAlertSearch
             // 
@@ -787,7 +861,7 @@
             this.lblAlertCount.Name = "lblAlertCount";
             this.lblAlertCount.Size = new System.Drawing.Size(68, 20);
             this.lblAlertCount.TabIndex = 6;
-            this.lblAlertCount.Text = "경고 2건";
+            this.lblAlertCount.Text = "경고 0건";
             // 
             // btnAlertSearch
             // 
@@ -798,6 +872,7 @@
             this.btnAlertSearch.TabIndex = 4;
             this.btnAlertSearch.Text = "조회";
             this.btnAlertSearch.UseVisualStyleBackColor = true;
+            this.btnAlertSearch.Click += new System.EventHandler(this.btnAlertSearch_Click);
             // 
             // lblAlertEnd
             // 
@@ -817,6 +892,7 @@
             this.dtpAlertEnd.Name = "dtpAlertEnd";
             this.dtpAlertEnd.Size = new System.Drawing.Size(175, 25);
             this.dtpAlertEnd.TabIndex = 2;
+            this.dtpAlertEnd.ValueChanged += new System.EventHandler(this.dtpAlertEnd_ValueChanged);
             // 
             // dtpAlertStart
             // 
@@ -854,6 +930,7 @@
             // 
             this.dgvKakao.AllowUserToAddRows = false;
             this.dgvKakao.AllowUserToDeleteRows = false;
+            this.dgvKakao.AllowUserToResizeRows = false;
             this.dgvKakao.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvKakao.BackgroundColor = System.Drawing.Color.White;
             this.dgvKakao.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
@@ -862,8 +939,8 @@
             dataGridViewCellStyle8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
             dataGridViewCellStyle8.Font = new System.Drawing.Font("맑은 고딕", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             dataGridViewCellStyle8.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(56)))), ((int)(((byte)(100)))));
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgvKakao.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
             this.dgvKakao.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -874,6 +951,7 @@
             this.colKakaoResult});
             this.dgvKakao.EnableHeadersVisualStyles = false;
             this.dgvKakao.Location = new System.Drawing.Point(18, 80);
+            this.dgvKakao.MultiSelect = false;
             this.dgvKakao.Name = "dgvKakao";
             this.dgvKakao.ReadOnly = true;
             this.dgvKakao.RowHeadersVisible = false;
@@ -885,32 +963,42 @@
             // 
             // colKakaoTime
             // 
+            this.colKakaoTime.DataPropertyName = "SEND_DT";
+            dataGridViewCellStyle14.Format = "yyyy-MM-dd HH:mm:ss";
+            this.colKakaoTime.DefaultCellStyle = dataGridViewCellStyle14;
             this.colKakaoTime.HeaderText = "발송 시각";
             this.colKakaoTime.MinimumWidth = 6;
             this.colKakaoTime.Name = "colKakaoTime";
             this.colKakaoTime.ReadOnly = true;
-            // 
+            this.colKakaoTime.ToolTipText = "클릭하면 정렬됩니다";
+            //
             // colKakaoReceiver
-            // 
+            //
+            this.colKakaoReceiver.DataPropertyName = "RECEIVER_NM";
             this.colKakaoReceiver.HeaderText = "수신자";
             this.colKakaoReceiver.MinimumWidth = 6;
             this.colKakaoReceiver.Name = "colKakaoReceiver";
             this.colKakaoReceiver.ReadOnly = true;
-            // 
+            this.colKakaoReceiver.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colKakaoMessage
-            // 
+            //
+            this.colKakaoMessage.DataPropertyName = "MESSAGE";
             this.colKakaoMessage.FillWeight = 200F;
             this.colKakaoMessage.HeaderText = "내용";
             this.colKakaoMessage.MinimumWidth = 6;
             this.colKakaoMessage.Name = "colKakaoMessage";
             this.colKakaoMessage.ReadOnly = true;
-            // 
+            this.colKakaoMessage.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            //
             // colKakaoResult
-            // 
+            //
+            this.colKakaoResult.DataPropertyName = "RESULT_NM";
             this.colKakaoResult.HeaderText = "결과";
             this.colKakaoResult.MinimumWidth = 6;
             this.colKakaoResult.Name = "colKakaoResult";
             this.colKakaoResult.ReadOnly = true;
+            this.colKakaoResult.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // pnlKakaoSearch
             // 
@@ -948,6 +1036,7 @@
             this.btnKakaoTest.TabIndex = 7;
             this.btnKakaoTest.Text = "테스트 발송";
             this.btnKakaoTest.UseVisualStyleBackColor = true;
+            this.btnKakaoTest.Click += new System.EventHandler(this.btnKakaoTest_Click);
             // 
             // lblKakaoCount
             // 
@@ -957,7 +1046,7 @@
             this.lblKakaoCount.Name = "lblKakaoCount";
             this.lblKakaoCount.Size = new System.Drawing.Size(68, 20);
             this.lblKakaoCount.TabIndex = 6;
-            this.lblKakaoCount.Text = "발송 1건";
+            this.lblKakaoCount.Text = "발송 0건";
             // 
             // btnKakaoSearch
             // 
@@ -968,6 +1057,7 @@
             this.btnKakaoSearch.TabIndex = 4;
             this.btnKakaoSearch.Text = "조회";
             this.btnKakaoSearch.UseVisualStyleBackColor = true;
+            this.btnKakaoSearch.Click += new System.EventHandler(this.btnKakaoSearch_Click);
             // 
             // lblKakaoEnd
             // 
@@ -1042,6 +1132,7 @@
             this.btnSaveSetting.TabIndex = 2;
             this.btnSaveSetting.Text = "설정 저장";
             this.btnSaveSetting.UseVisualStyleBackColor = true;
+            this.btnSaveSetting.Click += new System.EventHandler(this.btnSaveSetting_Click);
             // 
             // grpCycleSetting
             // 
@@ -1261,9 +1352,14 @@
             this.lblAlertTemp.Size = new System.Drawing.Size(150, 23);
             this.lblAlertTemp.TabIndex = 0;
             this.lblAlertTemp.Text = "경고 기준 온도(℃)";
-            // 
+            //
+            // tmrClock
+            //
+            this.tmrClock.Interval = 1000;
+            this.tmrClock.Tick += new System.EventHandler(this.tmrClock_Tick);
+            //
             // MainForm
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 708);
@@ -1271,7 +1367,10 @@
             this.Controls.Add(this.pnlTop);
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "온도 모니터링 시스템";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.pnlTop.ResumeLayout(false);
             this.pnlTop.PerformLayout();
             this.tabMain.ResumeLayout(false);
@@ -1408,5 +1507,6 @@
         private System.Windows.Forms.CheckBox chkKakaoAlert;
         private System.Windows.Forms.Label lblAdminNotice;
         private System.Windows.Forms.Button btnSaveSetting;
+        private System.Windows.Forms.Timer tmrClock;
     }
 }
